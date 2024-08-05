@@ -12,6 +12,13 @@ In this repo, we provide an example of how to run custom scheduler with Amazon E
 * Amazon EKS 1.24+
 * kubectl
 
+## Clone the repo
+
+```shell
+git clone https://github.com/aws-samples/custom-scheduler-eks
+cd custom-scheduler-eks
+```
+
 ### Install eks-node-viewer
 
 eks-node-viewer is a tool for visualizing dynamic node usage within a cluster, we will use this for tracking the binpacking.
