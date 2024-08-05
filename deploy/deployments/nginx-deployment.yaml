@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-app
+  labels:
+    App: od-amd
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 20%
+  selector:
+    matchLabels:
+      App: od-amd
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        App: od-amd
+    spec:
+      schedulerName: my-scheduler
+      terminationGracePeriodSeconds: 40
+      containers:
+      - name: nginx-app-memory
+        image: public.ecr.aws/docker/library/nginx:stable-perl
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 0.5
+            memory: 1Gi
