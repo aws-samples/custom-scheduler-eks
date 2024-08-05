@@ -60,6 +60,11 @@ kubectl apply -f deploy/manifests/custom-scheduler/amazon-eks-1.24-custom-schedu
 kubectl apply -f deploy/manifests/custom-scheduler/amazon-eks-1.29-custom-scheduler.yaml
 ```
 
+**Other Amazon EKS versions**
+
+* replace the related image URL(https://gallery.ecr.aws/eks-distro/kubernetes/kube-scheduler)
+* For none Amazon EKS 1.24, use Amazon EKS 1.29 manifests and related image
+
 #### Helm
 
 Comming soon
@@ -73,12 +78,20 @@ Comming soon
 eks-node-viewer --extra-labels topology.kubernetes.io/zone
 ```
 
+### EKS node usage before the deployments
+
+![EKS Node Viewer](assets/images/eks-node-viewer-before-deployment.png "EKS Node Viewer")
+
 ### Apply a new deployment
 
 ```shell
 kubectl apply -f deploy/deployments/nginx-deployment.yaml
-
 ```
+
+### EKS node usage after the deployments
+
+![EKS Node Viewer](assets/images/eks-node-viewer-after-deployment.png "EKS Node Viewer")
+
 
 ## Security
 
@@ -87,4 +100,3 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
-
