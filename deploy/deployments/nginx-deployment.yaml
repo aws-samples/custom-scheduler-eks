@@ -1,7 +1,14 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nginx-test
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-app
+  namespace: nginx-test
   labels:
     App: od-amd
 spec:
@@ -13,7 +20,7 @@ spec:
   selector:
     matchLabels:
       App: od-amd
-  replicas: 4
+  replicas: 2 
   template:
     metadata:
       labels:
@@ -23,10 +30,26 @@ spec:
       terminationGracePeriodSeconds: 40
       containers:
       - name: nginx-app-memory
-        image: public.ecr.aws/docker/library/nginx:stable-perl
+        image: public.ecr.aws/docker/library/nginx:stable-perl@sha256:efafee95d6f5c583c2601b7da4fbb65c8cc1e6c08ccb5fad83ad2442f07e6001
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+        name: kube-second-scheduler
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+        securityContext:
+          privileged: false
         ports:
         - containerPort: 80
         resources:
           requests:
-            cpu: 0.5
+            cpu: '1'
+            memory: 1Gi
+          limits:
+            cpu: '1'
             memory: 1Gi

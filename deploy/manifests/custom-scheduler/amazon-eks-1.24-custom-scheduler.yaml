@@ -285,7 +285,8 @@ spec:
         - --bind-address=0.0.0.0
         - --config=/etc/kubernetes/my-scheduler/my-scheduler-config.yaml
         - --v=5
-        image: public.ecr.aws/eks-distro/kubernetes/kube-scheduler:v1.24.16-eks-1-24-25
+        image: public.ecr.aws/eks-distro/kubernetes/kube-scheduler:v1.24.16-eks-1-24-25@sha256:1ef0ec0031440a4d002a802c839e66b65345851f273c5907cafd13507ea9fee7
+        imagePullPolicy: Always
         livenessProbe:
           httpGet:
             path: /healthz
@@ -301,6 +302,10 @@ spec:
         resources:
           requests:
             cpu: '1'
+            memory: 1Gi
+          limits:
+            cpu: '1'
+            memory: 1Gi
         securityContext:
           privileged: false
         volumeMounts:
