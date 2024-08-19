@@ -37,13 +37,11 @@ spec:
             path: /
             port: 80
           initialDelaySeconds: 15
-        name: kube-second-scheduler
         readinessProbe:
           httpGet:
             path: /
             port: 80
-        securityContext:
-          privileged: false
+        name: kube-second-scheduler
         ports:
         - containerPort: 80
         resources:
