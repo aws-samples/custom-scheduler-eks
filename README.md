@@ -1,6 +1,8 @@
-## Custom Scheduler for Amazon EKS with Binpackingd
+## Custom Scheduler for Amazon EKS with Binpacking
 
-When running jobs on Kubernetes, the default kube-scheduler will balance the pods across the nodes which resuilt in fragmentations causing cost increase. Job workloads like Spark, is not long running, and many customers have different sizes of jobs. Without bin packing for kube-scheduler, node usage can not be increased and node can be scale in in time.
+This is the custom scheduler with MostAllocated score strategy, that is known as the binpacking.
+
+When running jobs on Kubernetes, the default kube-scheduler will balance the pods across the nodes which result in fragmentations causing cost increase. Job workloads like Spark, that is not long running, and many customers have different sizes of jobs. Without bin packing for kube-scheduler, node usage can not be increased and node can be scale-in in time, which cause cost increase.
 
 In this repo, we provide an example of how to run custom scheduler with Amazon EKS 1.24+.
 
