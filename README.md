@@ -72,7 +72,6 @@ kubectl apply -f deploy/manifests/custom-scheduler/amazon-eks-1.29-custom-schedu
 **Other Amazon EKS versions**
 
 * replace the related image URL(https://gallery.ecr.aws/eks-distro/kubernetes/kube-scheduler)
-* For none Amazon EKS 1.24, use Amazon EKS 1.29 manifests and related image
 
 #### Helm
 
