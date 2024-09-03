@@ -1,0 +1,120 @@
+# Default values for custom-scheduler-eks.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+nameSpace: kube-system
+eksVersion: 1.24
+leaderElection:
+  enabled: true
+
+logLevel: 5
+schedulerName: custom-scheduler-eks
+
+image:
+  repository: public.ecr.aws/eks-distro/kubernetes/kube-scheduler
+  pullPolicy: IfNotPresent
+  tags:
+    1.24: "v1.24.17-eks-1-24-latest"
+    1.25: "v1.25.16-eks-1-25-latest"
+    1.26: "v1.26.15-eks-1-26-latest"
+    1.27: "v1.27.16-eks-1-27-latest"
+    1.28: "v1.28.12-eks-1-28-latest"
+    1.29: "v1.29.7-eks-1-29-latest"
+    1.30: "v1.30.3-eks-1-30-latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: "custom-scheduler-eks"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: "custom-scheduler-eks"
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  runAsNonRoot: false
+  privileged: false
+  capabilities:
+    drop:
+      - ALL
+
+securityContext:
+  runAsNonRoot: true
+
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  requests:
+    cpu: '1'
+    memory: 1Gi
+  limits:
+    cpu: '1'
+    memory: 1Gi
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 10259
+    scheme: HTTPS
+  initialDelaySeconds: 15
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 10259
+    scheme: HTTPS
+
+
+# Additional volumes on the output Deployment definition.
+volumes:
+  - name: config-volume
+    configMap:
+      name: custom-scheduler-eks-config
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts:
+  - name: config-volume
+    mountPath: /etc/kubernetes/custom-k8s-scheduler
+
+nodeSelector: {}
+
+tolerations: []
+
+plugins:
+  score:
+    enabled:
+      - name: NodeResourcesFit
+        weight: 1
+    disabled:
+      - name: "*"
+  multiPoint:
+    enabled:
+      - name: NodeResourcesFit
+        weight: 1
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: karpenter.sh/nodepool
+          operator: DoesNotExist
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchLabels:
+          component: custom-scheduler-eks
+      topologyKey: kubernetes.io/hostname

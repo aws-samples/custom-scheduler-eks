@@ -20,18 +20,25 @@ spec:
   selector:
     matchLabels:
       App: od-amd
-  replicas: 2 
+  replicas: 1 
   template:
     metadata:
       labels:
         App: od-amd
     spec:
-      schedulerName: my-scheduler
+      #schedulerName: custom-scheduler-eks
       terminationGracePeriodSeconds: 40
       containers:
       - name: nginx-app-memory
         image: public.ecr.aws/docker/library/nginx:stable-perl@sha256:efafee95d6f5c583c2601b7da4fbb65c8cc1e6c08ccb5fad83ad2442f07e6001
         imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "64Mi"
+          limits:
+            cpu: "250m"
+            memory: "64Mi"
         livenessProbe:
           httpGet:
             path: /
@@ -44,10 +51,3 @@ spec:
         name: kube-second-scheduler
         ports:
         - containerPort: 80
-        resources:
-          requests:
-            cpu: '1'
-            memory: 1Gi
-          limits:
-            cpu: '1'
-            memory: 1Gi

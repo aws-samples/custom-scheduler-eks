@@ -1,0 +1,340 @@
+---
+# Source: custom-scheduler-eks/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: custom-scheduler-eks
+  namespace: kube-system
+  labels:
+    helm.sh/chart: custom-scheduler-eks-0.1.0
+    app.kubernetes.io/name: custom-scheduler-eks
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: custom-scheduler-eks/templates/deployment.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-scheduler-eks-config
+  namespace: kube-system
+data:
+  custom-scheduler-eks-config.yaml: |
+    apiVersion: kubescheduler.config.k8s.io/v1
+    kind: KubeSchedulerConfiguration
+    profiles:
+      - pluginConfig:
+          - args:
+              apiVersion: kubescheduler.config.k8s.io/v1
+              kind: NodeResourcesFitArgs
+              scoringStrategy:
+                  resources:
+                      - name: cpu
+                        weight: 1
+                      - name: memory
+                        weight: 1
+                  type: MostAllocated
+            name: NodeResourcesFit
+        plugins:
+          score:
+              enabled:
+                  - name: NodeResourcesFit
+                    weight: 1
+              disabled:
+                  - name: "*"
+          multiPoint:
+              enabled:
+                  - name: NodeResourcesFit
+                    weight: 1
+        schedulerName: custom-scheduler-eks
+    leaderElection:
+      leaderElect: true
+      resourceNamespace: kube-system
+      resourceName: custom-scheduler-eks
+---
+# Source: custom-scheduler-eks/templates/serviceaccount.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: custom-scheduler-eks
+rules:
+- apiGroups:
+  - ""
+  - events.k8s.io
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - list
+  - update
+- apiGroups:
+  - coordination.k8s.io
+  resourceNames:
+  - kube-scheduler
+  resources:
+  - leases
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resourceNames:
+  - kube-scheduler
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - bindings
+  - pods/binding
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - pods/status
+  verbs:
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - replicationcontrollers
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  - extensions
+  resources:
+  - replicasets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  - persistentvolumes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - csinodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - csidrivers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - csistoragecapacities
+  verbs:
+  - get
+  - list
+  - watch
+---
+# Source: custom-scheduler-eks/templates/serviceaccount.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: custom-k8s-scheduler-as-kube-scheduler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: custom-scheduler-eks
+subjects:
+- kind: ServiceAccount
+  name: custom-scheduler-eks
+  namespace: kube-system
+---
+# Source: custom-scheduler-eks/templates/serviceaccount.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: custom-k8s-scheduler-as-volume-scheduler
+subjects:
+- kind: ServiceAccount
+  name: custom-scheduler-eks
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: system:volume-scheduler
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: custom-scheduler-eks/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-scheduler-eks
+  namespace: kube-system
+  labels:
+    component: custom-scheduler-eks
+    chart: custom-scheduler-eks
+    release: release-name
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      component: custom-scheduler-eks
+      chart: custom-scheduler-eks
+      release: release-name
+  template:
+    metadata:
+      labels:
+        component: custom-scheduler-eks
+        chart: custom-scheduler-eks
+        release: release-name
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: karpenter.sh/nodepool
+                operator: DoesNotExist
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                component: custom-scheduler-eks
+            topologyKey: kubernetes.io/hostname
+      serviceAccountName: custom-scheduler-eks
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: custom-scheduler-eks
+          command:
+          - /usr/local/bin/kube-scheduler
+          - --bind-address=0.0.0.0
+          - --config=/etc/kubernetes/custom-k8s-scheduler/custom-scheduler-eks-config.yaml
+          - --v=5
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: false
+          image: public.ecr.aws/eks-distro/kubernetes/kube-scheduler:v1.29.6-eks-1-29-18 #"public.ecr.aws/eks-distro/kubernetes/kube-scheduler:v1.24.17-eks-1-24-latest"
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 10259
+              scheme: HTTPS
+            initialDelaySeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 10259
+              scheme: HTTPS
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: "1"
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /etc/kubernetes/custom-k8s-scheduler
+              name: config-volume
+      volumes:
+        - configMap:
+            name: custom-scheduler-eks-config
+          name: config-volume

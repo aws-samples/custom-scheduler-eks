@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-scheduler-eks-config
+  namespace: kube-system
+data:
+  custom-scheduler-eks-config.yaml: |
+    apiVersion: kubescheduler.config.k8s.io/v1
+    kind: KubeSchedulerConfiguration
+    profiles:
+      - pluginConfig:
+          - args:
+              apiVersion: kubescheduler.config.k8s.io/v1
+              kind: NodeResourcesFitArgs
+              scoringStrategy:
+                  resources:
+                      - name: cpu
+                        weight: 1
+                      - name: memory
+                        weight: 1
+                  type: MostAllocated
+            name: NodeResourcesFit
+        plugins:
+          score:
+              enabled:
+                  - name: NodeResourcesFit
+                    weight: 1
+              disabled:
+                  - name: "*"
+          multiPoint:
+              enabled:
+                  - name: NodeResourcesFit
+                    weight: 1
+        schedulerName: custom-scheduler-eks
+    leaderElection:
+      leaderElect: true
+      resourceNamespace: kube-system
+      resourceName: custom-scheduler-eks
