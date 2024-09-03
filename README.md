@@ -75,7 +75,21 @@ kubectl apply -f deploy/manifests/custom-scheduler/amazon-eks-1.29-custom-schedu
 
 #### Helm
 
-Comming soon
+**Available Values**
+
+| Value          | Descriptions                      | Default              |
+| --------       | -------                           |                      |
+| eksVersion     | Amazon EKS Versions               | 1.24                 |
+| leaderElection | whether to enable leader or not   | true                 |
+| logLevel       | the scheduler logging level(0-9)  | 5                    |
+| plugins        | the configuration for the custom scheduler | binpacking  |
+
+Please refer to the [values](https://github.com/aws-samples/custom-scheduler-eks/blob/main/deploy/charts/custom-scheduler-eks/values.yaml) for more info.
+
+```shell
+cd custom-scheduler-eks/deploy
+helm install custom-eks-scheduler charts/custom-scheduler-eks --set eksVersion=1.29 --set schedulerName=second-k8s-scheduler --set nameSpace=kube-system
+```
 
 
 ## Testing
